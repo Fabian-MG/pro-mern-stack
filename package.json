@@ -7,7 +7,9 @@
     "start": "nodemon -w server server/server.js",
     "compile": "babel src --out-dir public",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "babel src --out-dir public --watch --verbose"
+    "watch": "babel src --out-dir public --watch --verbose",
+    "lint": "eslint --fix .",
+    "lint-check": "eslint ."
   },
   "author": "Fabian",
   "license": "ISC",
