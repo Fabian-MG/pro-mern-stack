@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-const issues = [
+const initialIssues = [
   {
     id: 1,
     status: "New",
@@ -24,28 +24,79 @@ const IssueFilter = () => {
   return <div>This is a placeholder for the issue filter</div>;
 };
 
-const IssueAdd = () => {
-  return <div>This is a placeholder for a form to add an issue.</div>;
+const IssueAdd = ({ createIssue }) => {
+  const initialState = { owner: "", title: "" };
+  const [issueForm, setIssueForm] = React.useState(initialState);
+  const { owner, title } = issueForm;
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setIssueForm({ ...issueForm, [name]: value });
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    createIssue(issueForm);
+    setIssueForm(initialState);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        name="owner"
+        value={owner}
+        onChange={handleChange}
+        placeholder="Owner"
+      />
+      <input
+        type="text"
+        name="title"
+        value={title}
+        onChange={handleChange}
+        placeholder="Title"
+      />
+      <button type="submit">Add Issue</button>
+    </form>
+  );
 };
 
 const IssueList = () => {
+  const [issues, setIssues] = React.useState([]);
+
+  const createIssue = (issue) => {
+    const newIssueList = [...issues];
+    newIssueList.push({
+      ...issue,
+      id: issues.length + 1,
+      created: new Date(),
+    });
+    setIssues(newIssueList);
+  };
+
+  const loadData = () => {
+    setTimeout(() => {
+      setIssues(initialIssues);
+    }, 500);
+  };
+
+  React.useEffect(() => {
+    loadData();
+  }, []);
+
   return (
     <>
       <h1>Issue Tracker</h1>
       <IssueFilter />
       <hr />
-      <IssueTable>
-        {issues.map((issue) => (
-          <IssueRow issue={issue} key={issue.id} />
-        ))}
-      </IssueTable>
+      <IssueTable issues={issues} />
       <hr />
-      <IssueAdd />
+      <IssueAdd createIssue={createIssue} />
     </>
   );
 };
 
-const IssueTable = ({ children }) => {
+const IssueTable = ({ issues }) => {
   return (
     <table className="bordered-table">
       <thead>
@@ -59,7 +110,11 @@ const IssueTable = ({ children }) => {
           <th>Title</th>
         </tr>
       </thead>
-      <tbody>{children}</tbody>
+      <tbody>
+        {issues.map((issue) => (
+          <IssueRow key={issue.id} issue={issue} />
+        ))}
+      </tbody>
     </table>
   );
 };

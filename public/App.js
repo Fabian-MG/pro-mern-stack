@@ -1,7 +1,33 @@
 "use strict";
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 /* eslint-disable react/prop-types */
-var issues = [{
+var initialIssues = [{
   id: 1,
   status: "New",
   owner: "Ravan",
@@ -18,33 +44,109 @@ var issues = [{
   due: new Date("2018-08-30"),
   title: "Missing bottom border on panel"
 }];
+var sampleIssue = {
+  status: "New",
+  owner: "Pieta",
+  title: "Completion date should be optional"
+};
 
 var IssueFilter = function IssueFilter() {
   return /*#__PURE__*/React.createElement("div", null, "This is a placeholder for the issue filter");
 };
 
-var IssueAdd = function IssueAdd() {
-  return /*#__PURE__*/React.createElement("div", null, "This is a placeholder for a form to add an issue.");
+var IssueAdd = function IssueAdd(_ref) {
+  var createIssue = _ref.createIssue;
+  var initialState = {
+    owner: "",
+    title: ""
+  };
+
+  var _React$useState = React.useState(initialState),
+      _React$useState2 = _slicedToArray(_React$useState, 2),
+      issueForm = _React$useState2[0],
+      setIssueForm = _React$useState2[1];
+
+  var owner = issueForm.owner,
+      title = issueForm.title;
+
+  var handleChange = function handleChange(event) {
+    var _event$target = event.target,
+        name = _event$target.name,
+        value = _event$target.value;
+    setIssueForm(_objectSpread(_objectSpread({}, issueForm), {}, _defineProperty({}, name, value)));
+  };
+
+  var handleSubmit = function handleSubmit(event) {
+    event.preventDefault();
+    createIssue(issueForm);
+    setIssueForm(initialState);
+  };
+
+  return /*#__PURE__*/React.createElement("form", {
+    onSubmit: handleSubmit
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    name: "owner",
+    value: owner,
+    onChange: handleChange,
+    placeholder: "Owner"
+  }), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    name: "title",
+    value: title,
+    onChange: handleChange,
+    placeholder: "Title"
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "submit"
+  }, "Add Issue"));
 };
 
 var IssueList = function IssueList() {
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h1", null, "Issue Tracker"), /*#__PURE__*/React.createElement(IssueFilter, null), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement(IssueTable, null, issues.map(function (issue) {
-    return /*#__PURE__*/React.createElement(IssueRow, {
-      issue: issue,
-      key: issue.id
-    });
-  })), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement(IssueAdd, null));
+  var _React$useState3 = React.useState([]),
+      _React$useState4 = _slicedToArray(_React$useState3, 2),
+      issues = _React$useState4[0],
+      setIssues = _React$useState4[1];
+
+  var createIssue = function createIssue(issue) {
+    var newIssueList = _toConsumableArray(issues);
+
+    newIssueList.push(_objectSpread(_objectSpread({}, issue), {}, {
+      id: issues.length + 1,
+      created: new Date()
+    }));
+    setIssues(newIssueList);
+  };
+
+  var loadData = function loadData() {
+    setTimeout(function () {
+      setIssues(initialIssues);
+    }, 500);
+  };
+
+  React.useEffect(function () {
+    loadData();
+  }, []);
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h1", null, "Issue Tracker"), /*#__PURE__*/React.createElement(IssueFilter, null), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement(IssueTable, {
+    issues: issues
+  }), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement(IssueAdd, {
+    createIssue: createIssue
+  }));
 };
 
-var IssueTable = function IssueTable(_ref) {
-  var children = _ref.children;
+var IssueTable = function IssueTable(_ref2) {
+  var issues = _ref2.issues;
   return /*#__PURE__*/React.createElement("table", {
     className: "bordered-table"
-  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "ID"), /*#__PURE__*/React.createElement("th", null, "Status"), /*#__PURE__*/React.createElement("th", null, "Owner"), /*#__PURE__*/React.createElement("th", null, "Created"), /*#__PURE__*/React.createElement("th", null, "Effort"), /*#__PURE__*/React.createElement("th", null, "Due Date"), /*#__PURE__*/React.createElement("th", null, "Title"))), /*#__PURE__*/React.createElement("tbody", null, children));
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "ID"), /*#__PURE__*/React.createElement("th", null, "Status"), /*#__PURE__*/React.createElement("th", null, "Owner"), /*#__PURE__*/React.createElement("th", null, "Created"), /*#__PURE__*/React.createElement("th", null, "Effort"), /*#__PURE__*/React.createElement("th", null, "Due Date"), /*#__PURE__*/React.createElement("th", null, "Title"))), /*#__PURE__*/React.createElement("tbody", null, issues.map(function (issue) {
+    return /*#__PURE__*/React.createElement(IssueRow, {
+      key: issue.id,
+      issue: issue
+    });
+  })));
 };
 
-var IssueRow = function IssueRow(_ref2) {
-  var issue = _ref2.issue;
+var IssueRow = function IssueRow(_ref3) {
+  var issue = _ref3.issue;
   return /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", null, issue.id), /*#__PURE__*/React.createElement("td", null, issue.status), /*#__PURE__*/React.createElement("td", null, issue.owner), /*#__PURE__*/React.createElement("td", null, issue.created.toDateString()), /*#__PURE__*/React.createElement("td", null, issue.effort), /*#__PURE__*/React.createElement("td", null, issue.due ? issue.due.toDateString() : ""), /*#__PURE__*/React.createElement("td", null, issue.title));
 };
 
