@@ -44,11 +44,6 @@ var initialIssues = [{
   due: new Date("2018-08-30"),
   title: "Missing bottom border on panel"
 }];
-var sampleIssue = {
-  status: "New",
-  owner: "Pieta",
-  title: "Completion date should be optional"
-};
 
 var IssueFilter = function IssueFilter() {
   return /*#__PURE__*/React.createElement("div", null, "This is a placeholder for the issue filter");

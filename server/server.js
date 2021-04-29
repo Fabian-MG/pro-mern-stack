@@ -1,11 +1,29 @@
-const express = require('express')
+const express = require("express");
+const fs = require("fs");
 
-const PORT = 3000
-const app = express()
+const { ApolloServer } = require("apollo-server-express");
 
-const fileServerMiddleware = express.static('public')
-app.use('/', fileServerMiddleware)
+let aboutMessage = "Issue Tracker API v1.0";
 
-app.listen(PORT, function () {
-    console.log('App started on port 3000')
-})
+const resolvers = {
+  Query: {
+    about: () => aboutMessage,
+  },
+  //mutation(obj, args, context, info);
+  Mutation: {
+    setAboutMessage: (_, { message }) => (aboutMessage = message),
+  },
+};
+
+const app = express();
+app.use(express.static("public"));
+
+const server = new ApolloServer({
+  typeDefs: fs.readFileSync("./server/schema.graphql", "utf-8"),
+  resolvers,
+});
+server.applyMiddleware({ app, path: "/graphql" });
+
+app.listen(3000, function () {
+  console.log("App started on port 3000");
+});
