@@ -6,6 +6,12 @@ const query = `query {
     created effort due
 } }`;
 
+const dateRegex = new RegExp("^\\d\\d\\d\\d-\\d\\d-\\d\\d");
+function jsonDateReviver(key, value) {
+  if (dateRegex.test(value)) return new Date(value);
+  return value;
+}
+
 const IssueFilter = () => {
   return <div>This is a placeholder for the issue filter</div>;
 };
@@ -47,6 +53,30 @@ const IssueAdd = ({ createIssue }) => {
   );
 };
 
+async function graphqlFetch(query, variables = {}) {
+  try {
+    const response = await fetch("/graphql", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, variables }),
+    });
+    const body = await response.text();
+    const result = JSON.parse(body, jsonDateReviver);
+    if (result.errors) {
+      const error = result.errors[0];
+      if (error.extensions.code == "BAD_USER_INPUT") {
+        const details = error.extensions.exception.errors.join("\n ");
+        alert(`${error.message}:\n ${details}`);
+      } else {
+        alert(`${error.extensions.code}: ${error.message}`);
+      }
+    }
+    return result.data;
+  } catch (e) {
+    alert(`Error in sending data to server: ${e.message}`);
+  }
+}
+
 const IssueList = () => {
   const [issues, setIssues] = React.useState([]);
 
@@ -56,36 +86,22 @@ const IssueList = () => {
         id 
       }
     }`;
-    const response = await fetch("/graphql", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query,
-        variables: {
-          issue: {
-            ...issue,
-            due: new Date(
-              new Date().getTime() + 1000 * 60 * 60 * 24 * 10
-            ).toISOString(),
-          },
-        },
-      }),
-    });
-
-    console.log(response);
-    loadData();
+    const newIssue = {
+      ...issue,
+      due: new Date(
+        new Date().getTime() + 1000 * 60 * 60 * 24 * 10
+      ).toISOString(),
+    };
+    const data = await graphqlFetch(query, { issue: newIssue });
+    if (data) {
+      loadData();
+    }
   };
 
   const loadData = async () => {
     try {
-      const response = await fetch("/graphql", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
-      });
-      const body = await response.text();
-      const result = JSON.parse(body, jsonDateReviver);
-      setIssues(result.data.issueList);
+      const data = await graphqlFetch(query);
+      if (data) setIssues(data.issueList);
     } catch (error) {
       console.log(error);
     }
@@ -129,12 +145,6 @@ const IssueTable = ({ issues }) => {
     </table>
   );
 };
-
-const dateRegex = new RegExp("^\\d\\d\\d\\d-\\d\\d-\\d\\d");
-function jsonDateReviver(key, value) {
-  if (dateRegex.test(value)) return new Date(value);
-  return value;
-}
 
 const IssueRow = ({ issue }) => {
   return (

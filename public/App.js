@@ -24,6 +24,12 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 /* eslint-disable react/prop-types */
 var query = "query {\n  issueList {\n    id title status owner\n    created effort due\n} }";
+var dateRegex = new RegExp("^\\d\\d\\d\\d-\\d\\d-\\d\\d");
+
+function jsonDateReviver(key, value) {
+  if (dateRegex.test(value)) return new Date(value);
+  return value;
+}
 
 var IssueFilter = function IssueFilter() {
   return /*#__PURE__*/React.createElement("div", null, "This is a placeholder for the issue filter");
@@ -76,6 +82,74 @@ var IssueAdd = function IssueAdd(_ref) {
   }, "Add Issue"));
 };
 
+function graphqlFetch(_x) {
+  return _graphqlFetch.apply(this, arguments);
+}
+
+function _graphqlFetch() {
+  _graphqlFetch = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(query) {
+    var variables,
+        response,
+        body,
+        result,
+        error,
+        details,
+        _args3 = arguments;
+    return regeneratorRuntime.wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            variables = _args3.length > 1 && _args3[1] !== undefined ? _args3[1] : {};
+            _context3.prev = 1;
+            _context3.next = 4;
+            return fetch("/graphql", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                query: query,
+                variables: variables
+              })
+            });
+
+          case 4:
+            response = _context3.sent;
+            _context3.next = 7;
+            return response.text();
+
+          case 7:
+            body = _context3.sent;
+            result = JSON.parse(body, jsonDateReviver);
+
+            if (result.errors) {
+              error = result.errors[0];
+
+              if (error.extensions.code == "BAD_USER_INPUT") {
+                details = error.extensions.exception.errors.join("\n ");
+                alert("".concat(error.message, ":\n ").concat(details));
+              } else {
+                alert("".concat(error.extensions.code, ": ").concat(error.message));
+              }
+            }
+
+            return _context3.abrupt("return", result.data);
+
+          case 13:
+            _context3.prev = 13;
+            _context3.t0 = _context3["catch"](1);
+            alert("Error in sending data to server: ".concat(_context3.t0.message));
+
+          case 16:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3, null, [[1, 13]]);
+  }));
+  return _graphqlFetch.apply(this, arguments);
+}
+
 var IssueList = function IssueList() {
   var _React$useState3 = React.useState([]),
       _React$useState4 = _slicedToArray(_React$useState3, 2),
@@ -84,32 +158,26 @@ var IssueList = function IssueList() {
 
   var createIssue = /*#__PURE__*/function () {
     var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(issue) {
-      var query, response;
+      var query, newIssue, data;
       return regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
               query = "mutation issueAdd($issue: IssueInputs!) {\n      issueAdd(issue: $issue) {\n        id \n      }\n    }";
-              _context.next = 3;
-              return fetch("/graphql", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                  query: query,
-                  variables: {
-                    issue: _objectSpread(_objectSpread({}, issue), {}, {
-                      due: new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 10).toISOString()
-                    })
-                  }
-                })
+              newIssue = _objectSpread(_objectSpread({}, issue), {}, {
+                due: new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 10).toISOString()
+              });
+              _context.next = 4;
+              return graphqlFetch(query, {
+                issue: newIssue
               });
 
-            case 3:
-              response = _context.sent;
-              console.log(response);
-              loadData();
+            case 4:
+              data = _context.sent;
+
+              if (data) {
+                loadData();
+              }
 
             case 6:
             case "end":
@@ -119,53 +187,39 @@ var IssueList = function IssueList() {
       }, _callee);
     }));
 
-    return function createIssue(_x) {
+    return function createIssue(_x2) {
       return _ref2.apply(this, arguments);
     };
   }();
 
   var loadData = /*#__PURE__*/function () {
     var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
-      var response, body, result;
+      var data;
       return regeneratorRuntime.wrap(function _callee2$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
               _context2.prev = 0;
               _context2.next = 3;
-              return fetch("/graphql", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                  query: query
-                })
-              });
+              return graphqlFetch(query);
 
             case 3:
-              response = _context2.sent;
-              _context2.next = 6;
-              return response.text();
-
-            case 6:
-              body = _context2.sent;
-              result = JSON.parse(body, jsonDateReviver);
-              setIssues(result.data.issueList);
-              _context2.next = 14;
+              data = _context2.sent;
+              if (data) setIssues(data.issueList);
+              _context2.next = 10;
               break;
 
-            case 11:
-              _context2.prev = 11;
+            case 7:
+              _context2.prev = 7;
               _context2.t0 = _context2["catch"](0);
               console.log(_context2.t0);
 
-            case 14:
+            case 10:
             case "end":
               return _context2.stop();
           }
         }
-      }, _callee2, null, [[0, 11]]);
+      }, _callee2, null, [[0, 7]]);
     }));
 
     return function loadData() {
@@ -194,13 +248,6 @@ var IssueTable = function IssueTable(_ref4) {
     });
   })));
 };
-
-var dateRegex = new RegExp("^\\d\\d\\d\\d-\\d\\d-\\d\\d");
-
-function jsonDateReviver(key, value) {
-  if (dateRegex.test(value)) return new Date(value);
-  return value;
-}
 
 var IssueRow = function IssueRow(_ref5) {
   var issue = _ref5.issue;
