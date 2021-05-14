@@ -1,24 +1,10 @@
 /* eslint-disable react/prop-types */
-const initialIssues = [
-  {
-    id: 1,
-    status: "New",
-    owner: "Ravan",
-    effort: 5,
-    created: new Date("2018-08-15"),
-    due: undefined,
-    title: "Error in console when clicking Add",
-  },
-  {
-    id: 2,
-    status: "Assigned",
-    owner: "Eddie",
-    effort: 14,
-    created: new Date("2018-08-16"),
-    due: new Date("2018-08-30"),
-    title: "Missing bottom border on panel",
-  },
-];
+
+const query = `query {
+  issueList {
+    id title status owner
+    created effort due
+} }`;
 
 const IssueFilter = () => {
   return <div>This is a placeholder for the issue filter</div>;
@@ -64,20 +50,45 @@ const IssueAdd = ({ createIssue }) => {
 const IssueList = () => {
   const [issues, setIssues] = React.useState([]);
 
-  const createIssue = (issue) => {
-    const newIssueList = [...issues];
-    newIssueList.push({
-      ...issue,
-      id: issues.length + 1,
-      created: new Date(),
+  const createIssue = async (issue) => {
+    const query = `mutation issueAdd($issue: IssueInputs!) {
+      issueAdd(issue: $issue) {
+        id 
+      }
+    }`;
+    const response = await fetch("/graphql", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query,
+        variables: {
+          issue: {
+            ...issue,
+            due: new Date(
+              new Date().getTime() + 1000 * 60 * 60 * 24 * 10
+            ).toISOString(),
+          },
+        },
+      }),
     });
-    setIssues(newIssueList);
+
+    console.log(response);
+    loadData();
   };
 
-  const loadData = () => {
-    setTimeout(() => {
-      setIssues(initialIssues);
-    }, 500);
+  const loadData = async () => {
+    try {
+      const response = await fetch("/graphql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+      const body = await response.text();
+      const result = JSON.parse(body, jsonDateReviver);
+      setIssues(result.data.issueList);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   React.useEffect(() => {
@@ -119,6 +130,12 @@ const IssueTable = ({ issues }) => {
   );
 };
 
+const dateRegex = new RegExp("^\\d\\d\\d\\d-\\d\\d-\\d\\d");
+function jsonDateReviver(key, value) {
+  if (dateRegex.test(value)) return new Date(value);
+  return value;
+}
+
 const IssueRow = ({ issue }) => {
   return (
     <tr>
@@ -127,7 +144,7 @@ const IssueRow = ({ issue }) => {
       <td>{issue.owner}</td>
       <td>{issue.created.toDateString()}</td>
       <td>{issue.effort}</td>
-      <td>{issue.due ? issue.due.toDateString() : ""}</td>
+      <td>{issue.due ? issue.due.toDateString() : " "}</td>
       <td>{issue.title}</td>
     </tr>
   );
