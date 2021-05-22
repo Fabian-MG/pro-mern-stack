@@ -2,8 +2,13 @@
 
 const query = `query {
   issueList {
-    id title status owner
-    created effort due
+    id 
+    title 
+    status 
+    owner
+    created 
+    effort 
+    due
 } }`;
 
 const dateRegex = new RegExp("^\\d\\d\\d\\d-\\d\\d-\\d\\d");

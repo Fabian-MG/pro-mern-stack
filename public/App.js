@@ -23,7 +23,7 @@ function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 /* eslint-disable react/prop-types */
-var query = "query {\n  issueList {\n    id title status owner\n    created effort due\n} }";
+var query = "query {\n  issueList {\n    id \n    title \n    status \n    owner\n    created \n    effort \n    due\n} }";
 var dateRegex = new RegExp("^\\d\\d\\d\\d-\\d\\d-\\d\\d");
 
 function jsonDateReviver(key, value) {

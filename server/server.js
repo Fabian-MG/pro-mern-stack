@@ -1,47 +1,64 @@
-const express = require("express");
 const fs = require("fs");
-
+const express = require("express");
+const { MongoClient } = require("mongodb");
+const { GraphQLDate } = require("./graphql/scalars");
 const { ApolloServer, UserInputError } = require("apollo-server-express");
-const { GraphQLScalarType } = require("graphql");
-const { Kind } = require("graphql/language");
 
-let aboutMessage = "Issue Tracker API v1.0";
-const issuesDB = [
-  {
-    id: 1,
-    status: "New",
-    owner: "Ravan",
-    effort: 5,
-    created: new Date("2019-01-15"),
-    due: undefined,
-    title: "Error in console when clicking Add",
-  },
-  {
-    id: 2,
-    status: "Assigned",
-    owner: "Eddie",
-    effort: 14,
-    created: new Date("2019-01-16"),
-    due: new Date("2019-02-01"),
-    title: "Missing bottom border on panel",
-  },
-];
+const dbURI =
+  "mongodb+srv://test_user:test123@pro-mern-stack.cqk1y.mongodb.net/issue-tracker?retryWrites=true&w=majority";
+let db;
 
-const GraphQLDate = new GraphQLScalarType({
-  name: "GraphQLDate",
-  description: "A date type in GraphQL as a scalar",
-  serialize: (value) => value.toISOString(),
-  parseLiteral: (ast) => {
-    if (ast.kind == Kind.STRING) {
-      const value = new Date(ast.value);
-      return isNaN(value) ? undefined : value;
-    }
-  },
-  parseValue: (value) => {
-    const dateValue = new Date(value);
-    return isNaN(dateValue) ? undefined : dateValue;
-  },
+const app = express();
+app.use("/", express.static("public"));
+
+//api server-resources-format
+/*
+app.get('/hello', (req, res) => {
+  res.send('Hello World!');
 });
+
+app.get('/customers/:customerId', () => {
+  req.params.customerId 
+})
+*/
+
+app.get("/test", (req, res) => {
+  const testObj = {
+    date: new Date(),
+    name: req.query.name,
+  };
+
+  res.json(testObj);
+});
+
+app.get("/test/:id", (req, res) => {
+  res.send(`Request with id: ${req.params.id}`);
+});
+
+app.get("/test/:id/doc", (req, res) => {
+  res.send(`Returning doc for id: ${req.params.id}`);
+});
+
+const connectToDB = async () => {
+  const client = new MongoClient(dbURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  await client.connect();
+  console.log("Connected to MongoDB at ", dbURI);
+  db = client.db();
+};
+
+const getNextSequence = async (name) => {
+  const result = await db
+    .collection("counters")
+    .findOneAndUpdate(
+      { _id: name },
+      { $inc: { current: 1 } },
+      { returnOriginal: false }
+    );
+  return result.value.current;
+};
 
 const validateIssue = (issue) => {
   const errors = [];
@@ -61,36 +78,44 @@ const validateIssue = (issue) => {
 
 const resolvers = {
   Query: {
-    about: () => aboutMessage,
-    issueList: () => issuesDB,
+    issueList: async () => {
+      const issues = await db.collection("issues").find({}).toArray();
+      return issues;
+    },
   },
-  //mutation(obj, args, context, info);
   Mutation: {
-    setAboutMessage: (_, { message }) => (aboutMessage = message),
-    issueAdd: (_, { issue }) => {
+    issueAdd: async (_, { issue }) => {
       validateIssue(issue);
       issue.created = new Date();
-      issue.id = issuesDB.length + 1;
-      issuesDB.push(issue);
-      return issue;
+      issue.id = await getNextSequence("issues");
+      const result = await db.collection("issues").insertOne(issue);
+      const savedIssue = await db
+        .collection("issues")
+        .findOne({ _id: result.insertedId });
+      return savedIssue;
     },
   },
   GraphQLDate,
 };
 
-const app = express();
-app.use(express.static("public"));
-
 const server = new ApolloServer({
-  typeDefs: fs.readFileSync("./server/schema.graphql", "utf-8"),
+  typeDefs: fs.readFileSync("./server/graphql/schema.graphql", "utf-8"),
   resolvers,
   formatError: (error) => {
     console.log(error);
     return error;
   },
 });
+
 server.applyMiddleware({ app, path: "/graphql" });
 
-app.listen(3000, function () {
-  console.log("App started on port 3000");
-});
+(async function () {
+  try {
+    await connectToDB();
+    app.listen(3000, function () {
+      console.log("App started on port 3000");
+    });
+  } catch (err) {
+    console.log("ERROR:", err);
+  }
+})();
