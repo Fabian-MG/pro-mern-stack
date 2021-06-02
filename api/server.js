@@ -1,43 +1,16 @@
 const fs = require("fs");
+require('dotenv').config();
 const express = require("express");
 const { MongoClient } = require("mongodb");
 const { GraphQLDate } = require("./graphql/scalars");
 const { ApolloServer, UserInputError } = require("apollo-server-express");
 
-const dbURI =
+const port = process.env.API_SERVER_PORT || 3000;
+const dbURI = process.env.DB_URL ||
   "mongodb+srv://test_user:test123@pro-mern-stack.cqk1y.mongodb.net/issue-tracker?retryWrites=true&w=majority";
 let db;
 
 const app = express();
-app.use("/", express.static("public"));
-
-//api server-resources-format
-/*
-app.get('/hello', (req, res) => {
-  res.send('Hello World!');
-});
-
-app.get('/customers/:customerId', () => {
-  req.params.customerId 
-})
-*/
-
-app.get("/test", (req, res) => {
-  const testObj = {
-    date: new Date(),
-    name: req.query.name,
-  };
-
-  res.json(testObj);
-});
-
-app.get("/test/:id", (req, res) => {
-  res.send(`Request with id: ${req.params.id}`);
-});
-
-app.get("/test/:id/doc", (req, res) => {
-  res.send(`Returning doc for id: ${req.params.id}`);
-});
 
 const connectToDB = async () => {
   const client = new MongoClient(dbURI, {
@@ -99,7 +72,7 @@ const resolvers = {
 };
 
 const server = new ApolloServer({
-  typeDefs: fs.readFileSync("./server/graphql/schema.graphql", "utf-8"),
+  typeDefs: fs.readFileSync("./graphql/schema.graphql", "utf-8"),
   resolvers,
   formatError: (error) => {
     console.log(error);
@@ -107,13 +80,13 @@ const server = new ApolloServer({
   },
 });
 
-server.applyMiddleware({ app, path: "/graphql" });
+server.applyMiddleware({ app, path: "/graphql"});
 
 (async function () {
   try {
     await connectToDB();
-    app.listen(3000, function () {
-      console.log("App started on port 3000");
+    app.listen(port, function () {
+      console.log(`API server started on port ${port}`);
     });
   } catch (err) {
     console.log("ERROR:", err);
