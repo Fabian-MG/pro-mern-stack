@@ -1,4 +1,8 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable consistent-return */
+/* eslint-disable no-shadow */
+/* eslint "react/react-in-jsx-scope": "off" */
+/* globals React ReactDOM */
+/* eslint "react/jsx-no-undef": "off" */
 
 const query = `query {
   issueList {
@@ -11,18 +15,16 @@ const query = `query {
     due
 } }`;
 
-const dateRegex = new RegExp("^\\d\\d\\d\\d-\\d\\d-\\d\\d");
+const dateRegex = new RegExp('^\\d\\d\\d\\d-\\d\\d-\\d\\d');
 function jsonDateReviver(key, value) {
   if (dateRegex.test(value)) return new Date(value);
   return value;
 }
 
-const IssueFilter = () => {
-  return <div>This is a placeholder for the issue filter</div>;
-};
+const IssueFilter = () => <div>This is a placeholder for the issue filter</div>;
 
 const IssueAdd = ({ createIssue }) => {
-  const initialState = { owner: "", title: "" };
+  const initialState = { owner: '', title: '' };
   const [issueForm, setIssueForm] = React.useState(initialState);
   const { owner, title } = issueForm;
 
@@ -61,16 +63,16 @@ const IssueAdd = ({ createIssue }) => {
 async function graphqlFetch(query, variables = {}) {
   try {
     const response = await fetch('/graphql', {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query, variables }),
     });
     const body = await response.text();
     const result = JSON.parse(body, jsonDateReviver);
     if (result.errors) {
       const error = result.errors[0];
-      if (error.extensions.code == "BAD_USER_INPUT") {
-        const details = error.extensions.exception.errors.join("\n ");
+      if (error.extensions.code === 'BAD_USER_INPUT') {
+        const details = error.extensions.exception.errors.join('\n ');
         alert(`${error.message}:\n ${details}`);
       } else {
         alert(`${error.extensions.code}: ${error.message}`);
@@ -85,8 +87,17 @@ async function graphqlFetch(query, variables = {}) {
 const IssueList = () => {
   const [issues, setIssues] = React.useState([]);
 
+  const loadData = async () => {
+    try {
+      const data = await graphqlFetch(query);
+      if (data) setIssues(data.issueList);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const createIssue = async (issue) => {
-    const query = `mutation issueAdd($issue: IssueInputs!) {
+    const querySec = `mutation issueAdd($issue: IssueInputs!) {
       issueAdd(issue: $issue) {
         id 
       }
@@ -94,21 +105,12 @@ const IssueList = () => {
     const newIssue = {
       ...issue,
       due: new Date(
-        new Date().getTime() + 1000 * 60 * 60 * 24 * 10
+        new Date().getTime() + 1000 * 60 * 60 * 24 * 10,
       ).toISOString(),
     };
-    const data = await graphqlFetch(query, { issue: newIssue });
+    const data = await graphqlFetch(querySec, { issue: newIssue });
     if (data) {
       loadData();
-    }
-  };
-
-  const loadData = async () => {
-    try {
-      const data = await graphqlFetch(query);
-      if (data) setIssues(data.issueList);
-    } catch (error) {
-      console.log(error);
     }
   };
 
@@ -128,41 +130,37 @@ const IssueList = () => {
   );
 };
 
-const IssueTable = ({ issues }) => {
-  return (
-    <table className="bordered-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Status</th>
-          <th>Owner</th>
-          <th>Created</th>
-          <th>Effort</th>
-          <th>Due Date</th>
-          <th>Title</th>
-        </tr>
-      </thead>
-      <tbody>
-        {issues.map((issue) => (
-          <IssueRow key={issue.id} issue={issue} />
-        ))}
-      </tbody>
-    </table>
-  );
-};
+const IssueTable = ({ issues }) => (
+  <table className="bordered-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Status</th>
+        <th>Owner</th>
+        <th>Created</th>
+        <th>Effort</th>
+        <th>Due Date</th>
+        <th>Title</th>
+      </tr>
+    </thead>
+    <tbody>
+      {issues.map((issue) => (
+        <IssueRow key={issue.id} issue={issue} />
+      ))}
+    </tbody>
+  </table>
+);
 
-const IssueRow = ({ issue }) => {
-  return (
-    <tr>
-      <td>{issue.id}</td>
-      <td>{issue.status}</td>
-      <td>{issue.owner}</td>
-      <td>{issue.created.toDateString()}</td>
-      <td>{issue.effort}</td>
-      <td>{issue.due ? issue.due.toDateString() : " "}</td>
-      <td>{issue.title}</td>
-    </tr>
-  );
-};
+const IssueRow = ({ issue }) => (
+  <tr>
+    <td>{issue.id}</td>
+    <td>{issue.status}</td>
+    <td>{issue.owner}</td>
+    <td>{issue.created.toDateString()}</td>
+    <td>{issue.effort}</td>
+    <td>{issue.due ? issue.due.toDateString() : ' '}</td>
+    <td>{issue.title}</td>
+  </tr>
+);
 
-ReactDOM.render(<IssueList />, document.getElementById("content"));
+ReactDOM.render(<IssueList />, document.getElementById('content'));

@@ -22,9 +22,17 @@ function _iterableToArrayLimit(arr, i) { var _i = arr && (typeof Symbol !== "und
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-/* eslint-disable react/prop-types */
+/* eslint-disable consistent-return */
+
+/* eslint-disable no-shadow */
+
+/* eslint "react/react-in-jsx-scope": "off" */
+
+/* globals React ReactDOM */
+
+/* eslint "react/jsx-no-undef": "off" */
 var query = "query {\n  issueList {\n    id \n    title \n    status \n    owner\n    created \n    effort \n    due\n} }";
-var dateRegex = new RegExp("^\\d\\d\\d\\d-\\d\\d-\\d\\d");
+var dateRegex = new RegExp('^\\d\\d\\d\\d-\\d\\d-\\d\\d');
 
 function jsonDateReviver(key, value) {
   if (dateRegex.test(value)) return new Date(value);
@@ -38,8 +46,8 @@ var IssueFilter = function IssueFilter() {
 var IssueAdd = function IssueAdd(_ref) {
   var createIssue = _ref.createIssue;
   var initialState = {
-    owner: "",
-    title: ""
+    owner: '',
+    title: ''
   };
 
   var _React$useState = React.useState(initialState),
@@ -103,9 +111,9 @@ function _graphqlFetch() {
             _context3.prev = 1;
             _context3.next = 4;
             return fetch('/graphql', {
-              method: "POST",
+              method: 'POST',
               headers: {
-                "Content-Type": "application/json"
+                'Content-Type': 'application/json'
               },
               body: JSON.stringify({
                 query: query,
@@ -125,8 +133,8 @@ function _graphqlFetch() {
             if (result.errors) {
               error = result.errors[0];
 
-              if (error.extensions.code == "BAD_USER_INPUT") {
-                details = error.extensions.exception.errors.join("\n ");
+              if (error.extensions.code === 'BAD_USER_INPUT') {
+                details = error.extensions.exception.errors.join('\n ');
                 alert("".concat(error.message, ":\n ").concat(details));
               } else {
                 alert("".concat(error.extensions.code, ": ").concat(error.message));
@@ -156,24 +164,59 @@ var IssueList = function IssueList() {
       issues = _React$useState4[0],
       setIssues = _React$useState4[1];
 
-  var createIssue = /*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(issue) {
-      var query, newIssue, data;
+  var loadData = /*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+      var data;
       return regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
-              query = "mutation issueAdd($issue: IssueInputs!) {\n      issueAdd(issue: $issue) {\n        id \n      }\n    }";
+              _context.prev = 0;
+              _context.next = 3;
+              return graphqlFetch(query);
+
+            case 3:
+              data = _context.sent;
+              if (data) setIssues(data.issueList);
+              _context.next = 10;
+              break;
+
+            case 7:
+              _context.prev = 7;
+              _context.t0 = _context["catch"](0);
+              console.log(_context.t0);
+
+            case 10:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee, null, [[0, 7]]);
+    }));
+
+    return function loadData() {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+
+  var createIssue = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(issue) {
+      var querySec, newIssue, data;
+      return regeneratorRuntime.wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              querySec = "mutation issueAdd($issue: IssueInputs!) {\n      issueAdd(issue: $issue) {\n        id \n      }\n    }";
               newIssue = _objectSpread(_objectSpread({}, issue), {}, {
                 due: new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 10).toISOString()
               });
-              _context.next = 4;
-              return graphqlFetch(query, {
+              _context2.next = 4;
+              return graphqlFetch(querySec, {
                 issue: newIssue
               });
 
             case 4:
-              data = _context.sent;
+              data = _context2.sent;
 
               if (data) {
                 loadData();
@@ -181,48 +224,13 @@ var IssueList = function IssueList() {
 
             case 6:
             case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee);
-    }));
-
-    return function createIssue(_x2) {
-      return _ref2.apply(this, arguments);
-    };
-  }();
-
-  var loadData = /*#__PURE__*/function () {
-    var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
-      var data;
-      return regeneratorRuntime.wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              _context2.prev = 0;
-              _context2.next = 3;
-              return graphqlFetch(query);
-
-            case 3:
-              data = _context2.sent;
-              if (data) setIssues(data.issueList);
-              _context2.next = 10;
-              break;
-
-            case 7:
-              _context2.prev = 7;
-              _context2.t0 = _context2["catch"](0);
-              console.log(_context2.t0);
-
-            case 10:
-            case "end":
               return _context2.stop();
           }
         }
-      }, _callee2, null, [[0, 7]]);
+      }, _callee2);
     }));
 
-    return function loadData() {
+    return function createIssue(_x2) {
       return _ref3.apply(this, arguments);
     };
   }();
@@ -251,7 +259,7 @@ var IssueTable = function IssueTable(_ref4) {
 
 var IssueRow = function IssueRow(_ref5) {
   var issue = _ref5.issue;
-  return /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", null, issue.id), /*#__PURE__*/React.createElement("td", null, issue.status), /*#__PURE__*/React.createElement("td", null, issue.owner), /*#__PURE__*/React.createElement("td", null, issue.created.toDateString()), /*#__PURE__*/React.createElement("td", null, issue.effort), /*#__PURE__*/React.createElement("td", null, issue.due ? issue.due.toDateString() : " "), /*#__PURE__*/React.createElement("td", null, issue.title));
+  return /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", null, issue.id), /*#__PURE__*/React.createElement("td", null, issue.status), /*#__PURE__*/React.createElement("td", null, issue.owner), /*#__PURE__*/React.createElement("td", null, issue.created.toDateString()), /*#__PURE__*/React.createElement("td", null, issue.effort), /*#__PURE__*/React.createElement("td", null, issue.due ? issue.due.toDateString() : ' '), /*#__PURE__*/React.createElement("td", null, issue.title));
 };
 
-ReactDOM.render( /*#__PURE__*/React.createElement(IssueList, null), document.getElementById("content"));
+ReactDOM.render( /*#__PURE__*/React.createElement(IssueList, null), document.getElementById('content'));
