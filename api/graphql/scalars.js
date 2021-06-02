@@ -1,12 +1,14 @@
-const { Kind } = require("graphql/language");
-const { GraphQLScalarType } = require("graphql");
+/* eslint-disable no-restricted-globals */
+/* eslint-disable consistent-return */
+const { Kind } = require('graphql/language');
+const { GraphQLScalarType } = require('graphql');
 
 const GraphQLDate = new GraphQLScalarType({
-  name: "GraphQLDate",
-  description: "A date type in GraphQL as a scalar",
+  name: 'GraphQLDate',
+  description: 'A date type in GraphQL as a scalar',
   serialize: (value) => value.toISOString(),
   parseLiteral: (ast) => {
-    if (ast.kind == Kind.STRING) {
+    if (ast.kind === Kind.STRING) {
       const value = new Date(ast.value);
       return isNaN(value) ? undefined : value;
     }

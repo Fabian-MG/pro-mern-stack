@@ -4,6 +4,7 @@
     "description": "Pro MERN Stack API",
     "main": "index.js",
     "scripts": {
+        "lint": "eslint .",
         "start": "nodemon -e js,graphql -w . -w .env server.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -16,5 +17,10 @@
         "graphql": "^15.5.0",
         "mongodb": "^3.6.6",
         "nodemon": "^2.0.7"
+    },
+    "devDependencies": {
+        "eslint": "^7.27.0",
+        "eslint-config-airbnb-base": "^14.2.1",
+        "eslint-plugin-import": "^2.23.4"
     }
 }
