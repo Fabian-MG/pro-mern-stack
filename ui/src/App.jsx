@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-shadow */
+/* globals React ReactDOM PropTypes */
 /* eslint "react/react-in-jsx-scope": "off" */
-/* globals React ReactDOM */
 /* eslint "react/jsx-no-undef": "off" */
 
 const query = `query {
@@ -162,5 +162,9 @@ const IssueRow = ({ issue }) => (
     <td>{issue.title}</td>
   </tr>
 );
+
+IssueAdd.propTypes = {
+  createIssue: PropTypes.func.isRequired,
+};
 
 ReactDOM.render(<IssueList />, document.getElementById('content'));
