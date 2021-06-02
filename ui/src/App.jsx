@@ -60,7 +60,7 @@ const IssueAdd = ({ createIssue }) => {
 
 async function graphqlFetch(query, variables = {}) {
   try {
-    const response = await fetch(window.ENV.UI_API_ENDPOINT, {
+    const response = await fetch('/graphql', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query, variables }),
