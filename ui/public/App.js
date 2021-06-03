@@ -26,9 +26,9 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 /* eslint-disable no-shadow */
 
-/* eslint "react/react-in-jsx-scope": "off" */
+/* globals React ReactDOM PropTypes */
 
-/* globals React ReactDOM */
+/* eslint "react/react-in-jsx-scope": "off" */
 
 /* eslint "react/jsx-no-undef": "off" */
 var query = "query {\n  issueList {\n    id \n    title \n    status \n    owner\n    created \n    effort \n    due\n} }";
@@ -262,4 +262,7 @@ var IssueRow = function IssueRow(_ref5) {
   return /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", null, issue.id), /*#__PURE__*/React.createElement("td", null, issue.status), /*#__PURE__*/React.createElement("td", null, issue.owner), /*#__PURE__*/React.createElement("td", null, issue.created.toDateString()), /*#__PURE__*/React.createElement("td", null, issue.effort), /*#__PURE__*/React.createElement("td", null, issue.due ? issue.due.toDateString() : ' '), /*#__PURE__*/React.createElement("td", null, issue.title));
 };
 
+IssueAdd.propTypes = {
+  createIssue: PropTypes.func.isRequired
+};
 ReactDOM.render( /*#__PURE__*/React.createElement(IssueList, null), document.getElementById('content'));
